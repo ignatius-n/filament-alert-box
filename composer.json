@@ -1,0 +1,75 @@
+{
+    "name": "agencetwogether/filament-alert-box",
+    "description": "Define and display contextual alerts anywhere on your admin panel pages — Resources, custom Pages — using Filament's native render hooks system",
+    "keywords": [
+        "agencetwogether",
+        "laravel",
+        "filamentphp",
+        "filament-alert-box",
+        "hooks"
+    ],
+    "homepage": "https://github.com/agencetwogether/filament-alert-box",
+    "support": {
+        "issues": "https://github.com/agencetwogether/filament-alert-box/issues",
+        "source": "https://github.com/agencetwogether/filament-alert-box"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Max",
+            "email": "contact@agencetwogether.fr",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^4.0|^5.0",
+        "filament/spatie-laravel-settings-plugin": "^4.0|^5.0",
+        "spatie/laravel-package-tools": "^1.15.0",
+        "spatie/laravel-settings": "^3.0|^4.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^8.0",
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.7|^4.0",
+        "pestphp/pest-plugin-arch": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "pestphp/pest-plugin-livewire": "^3.0|^4.0"
+    },
+    "suggest": {
+        "agencetwogether/hookshelper": "Simple plugin to toggle display hooks available in current page"
+    },
+    "autoload": {
+        "psr-4": {
+            "Agencetwogether\\AlertBox\\": "src/",
+            "Agencetwogether\\AlertBox\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "scripts": {
+        "analyse": "phpstan analyse --memory-limit 1G",
+        "lint": "pint",
+        "lint:blade": "npm run format:check",
+        "lint:all": [
+            "@lint",
+            "@lint:blade"
+        ],
+        "format:blade": "npm run format"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Agencetwogether\\AlertBox\\AlertBoxServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

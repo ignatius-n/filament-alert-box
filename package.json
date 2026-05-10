@@ -1,0 +1,13 @@
+{
+    "name": "filament-alert-box",
+    "private": true,
+    "scripts": {
+        "format": "prettier --write 'resources/**/*.blade.php'",
+        "format:check": "prettier --check 'resources/**/*.blade.php'"
+    },
+    "devDependencies": {
+        "prettier": "^3.1.1",
+        "prettier-plugin-blade": "v2.0.0",
+        "prettier-plugin-tailwindcss": "^0.6.10"
+    }
+}
