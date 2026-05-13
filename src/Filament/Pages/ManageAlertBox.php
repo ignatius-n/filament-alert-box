@@ -4,6 +4,7 @@ namespace Agencetwogether\AlertBox\Filament\Pages;
 
 use Agencetwogether\AlertBox\AlertBox;
 use Agencetwogether\AlertBox\AlertBoxPlugin;
+use Agencetwogether\AlertBox\Concerns\HasPageShieldSupport;
 use Agencetwogether\AlertBox\Enums\Block as BlockEnum;
 use Agencetwogether\AlertBox\Settings\SettingAlertBox;
 use BackedEnum;
@@ -25,31 +26,35 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class ManageAlertBox extends SettingsPage
 {
+    use HasPageShieldSupport;
+
     protected static string $settings = SettingAlertBox::class;
 
     public function getTitle(): string
     {
-        return AlertBoxPlugin::get()->getTitle();
+        return AlertBoxPlugin::tryGet()?->getTitle()
+            ?? __('filament-alert-box::alert-box.page.title');
     }
 
     public static function getNavigationLabel(): string
     {
-        return AlertBoxPlugin::get()->getNavigationLabel();
+        return AlertBoxPlugin::tryGet()?->getNavigationLabel()
+            ?? __('filament-alert-box::alert-box.page.navigation_label');
     }
 
     public static function getNavigationIcon(): string | BackedEnum | Htmlable | null
     {
-        return AlertBoxPlugin::get()->getNavigationIcon();
+        return AlertBoxPlugin::tryGet()?->getNavigationIcon();
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return AlertBoxPlugin::get()->getNavigationGroup();
+        return AlertBoxPlugin::tryGet()?->getNavigationGroup();
     }
 
     public static function getNavigationSort(): ?int
     {
-        return AlertBoxPlugin::get()->getNavigationSort();
+        return AlertBoxPlugin::tryGet()?->getNavigationSort();
     }
 
     public static function getSlug(?Panel $panel = null): string
@@ -62,11 +67,6 @@ class ManageAlertBox extends SettingsPage
         return config('filament-alert-box.page.cluster');
     }
 
-    public static function canAccess(): bool
-    {
-        return AlertBoxPlugin::get()->isAuthorized();
-    }
-
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -75,7 +75,7 @@ class ManageAlertBox extends SettingsPage
                     ->blocks([
                         Block::make(BlockEnum::RESOURCE->value)
                             ->label(fn (Block $component, ?array $state): string => AlertBox::getBlockLabel($component->getName(), $state))
-                            ->icon(AlertBoxPlugin::get()->getIconResource())
+                            ->icon(AlertBoxPlugin::tryGet()?->getIconResource())
                             ->schema([
                                 Select::make('resources')
                                     ->label(__('filament-alert-box::alert-box.form.resource.resources'))
@@ -110,7 +110,7 @@ class ManageAlertBox extends SettingsPage
                             ]),
                         Block::make(BlockEnum::PAGE->value)
                             ->label(fn (Block $component, ?array $state): string => AlertBox::getBlockLabel($component->getName(), $state))
-                            ->icon(AlertBoxPlugin::get()->getIconPage())
+                            ->icon(AlertBoxPlugin::tryGet()?->getIconPage())
                             ->schema([
                                 Select::make('pages')
                                     ->label(__('filament-alert-box::alert-box.form.page.pages'))
@@ -124,19 +124,19 @@ class ManageAlertBox extends SettingsPage
                             ]),
                         Block::make(BlockEnum::GLOBAL->value)
                             ->label(fn (Block $component, ?array $state): string => AlertBox::getBlockLabel($component->getName(), $state))
-                            ->icon(AlertBoxPlugin::get()->getIconGlobal())
+                            ->icon(AlertBoxPlugin::tryGet()?->getIconGlobal())
                             ->schema([
                                 $this->commonFields(),
                             ]),
                     ])
                     ->hiddenLabel()
                     ->addActionLabel(__('filament-alert-box::alert-box.form.add'))
-                    ->addActionAlignment(AlertBoxPlugin::get()->getAddActionAlignment())
+                    ->addActionAlignment(AlertBoxPlugin::tryGet()?->getAddActionAlignment())
                     ->addBetweenAction(fn (Action $action) => $action->hidden())
                     ->blockIcons()
                     ->columnSpanFull()
-                    ->collapsible(AlertBoxPlugin::get()->getBlocksAreCollapsible())
-                    ->collapsed(AlertBoxPlugin::get()->getBlocksAreCollapsed())
+                    ->collapsible(AlertBoxPlugin::tryGet()?->getBlocksAreCollapsible() ?? false)
+                    ->collapsed(AlertBoxPlugin::tryGet()?->getBlocksAreCollapsed() ?? false)
                     ->blockNumbers(false)
                     ->deleteAction(fn (Action $action) => $action->requiresConfirmation()),
             ]);

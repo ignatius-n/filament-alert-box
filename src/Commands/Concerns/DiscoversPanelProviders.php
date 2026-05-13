@@ -27,7 +27,6 @@ trait DiscoversPanelProviders
         }
 
         foreach ($files as $file) {
-            // AdminPanelProvider.php → admin
             $filename = basename($file, '.php');
             $panelId = (string) Str::of($filename)
                 ->before('PanelProvider')

@@ -41,6 +41,7 @@ Alerts are managed through a dedicated settings page in your panel and stored in
 - **Multilingual** — English and French included, fully translatable
 - **Highly customizable** — colors, icons, navigation, authorization
 - **Custom hooks** — extend with your own render hook names
+- **Shield Support** — Built-in permission setup for Filament Shield
 
 ---
 
@@ -62,12 +63,12 @@ composer require agencetwogether/filament-alert-box
 ```
 > [!IMPORTANT]
 > If you have not set up a custom theme and are using Filament Panels follow the instructions in
-> the[Filament Docs (V4)](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme), [Filament Docs (V5)](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme)
+> the [Filament Docs (V4)](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme), [Filament Docs (V5)](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme)
 > first.
 
 ### Automatic installation
 
-**Run the install command:**
+**Run install command:**
 
 ```bash
 php artisan filament-alert-box:install
@@ -82,6 +83,7 @@ The installer will interactively guide you through:
 - Publishing views for customization
 - Register the plugin in your Filament panel
 - Register AlertBox styles in your custom Filament theme
+- Configure [Filament Shield](#filament-shield-integration) permission
 
 Then rebuild your assets:
 
@@ -138,7 +140,7 @@ public function panel(Panel $panel): Panel
 
 **Add the views to your theme.css**
 
-After setting up a custom theme add the following to your theme css file.
+After setting up a custom theme add the following to your theme CSS file.
 
 ```css
 @source '../../../../vendor/agencetwogether/filament-alert-box/resources/views/**/*';
@@ -153,8 +155,7 @@ npm run build
 
 ## Usage
 
-Once installed, a **"Manage alerts"** page is added to your panel's navigation. From this page you can create and manage
-all your alerts without touching any code.
+Once installed, a **"Manage alerts"** page is added to your panel's navigation. From this page you can create and manage all your alerts without touching any code.
 
 Each alert is defined as a **block** with one of three scopes:
 
@@ -264,14 +265,58 @@ AlertBoxPlugin::make()
     ->title('Alert Management'),
 ```
 
-### Authorization
+### Page Access Control
 
-Restrict access to the settings page:
+The `ManageAlertBox` settings page follows a **three-level priority chain** to decide whether the current user is allowed to access it. Each level is evaluated in order; the first one that applies wins.
+
+#### Priority 1 — Filament Shield permission *(highest)*
+
+If Shield is installed in your project **and** you have generated the permissions for this page, access is controlled exclusively by the generated permission e.g. `View:ManageAlertBox`.
+
+The page will be visible only to users (or roles) that have been granted that permission in your Shield configuration. The `->authorize()` option described below is ignored in this case.
+
+> [!NOTE]
+> If Shield is installed, but you have **not yet run** `shield:generate`, this level is skipped and the chain falls through to the next one. The page will not silently disappear while you are setting things up.
+
+---
+
+#### Priority 2 — Custom `->authorize()` closure
+
+If Shield is not installed (or its permission has not been generated yet), you can restrict access with your own logic by passing a closure to the `->authorize()` method when registering the plugin in your panel provider:
 
 ```php
 AlertBoxPlugin::make()
-    ->authorize(fn () => auth()->user()->isAdmin()),
+    ->authorize(fn (): bool => auth()->user()->isAdmin()),
 ```
+
+The closure receives no arguments and must return a `bool`. It is evaluated on every request, so you can use any runtime check — roles, model attributes, feature flags, etc.:
+
+```php
+AlertBoxPlugin::make()
+    ->authorize(fn (): bool => auth()->user()->hasRole('editor')),
+```
+
+> [!NOTE]
+> This level is only reached when Shield is **not** managing access for this page. If Shield is active and the permission exists, this closure is never called.
+
+---
+
+#### Priority 3 — Open access *(default)*
+
+If neither of the above applies — Shield is not installed and `->authorize()` was never called — the page is accessible to **every authenticated user who has access to the panel**. This is the default behavior and requires no configuration.
+
+---
+
+#### Summary
+
+| Situation                                      | Who can access the page                   |
+|------------------------------------------------|-------------------------------------------|
+| Shield installed + permission generated        | Users/roles granted `View:ManageAlertBox` |
+| Shield installed, permission **not** generated | Falls through to the next rule            |
+| `->authorize(fn ...)` defined, no Shield       | Users for whom the closure returns `true` |
+| Neither Shield nor `->authorize()`             | All authenticated panel users             |
+
+---
 
 ### Colors
 
@@ -367,6 +412,27 @@ php artisan vendor:publish --tag=filament-alert-box-views
 ```
 
 Files will be published to `resources/views/vendor/filament-alert-box/`.
+
+---
+## Filament Shield Integration
+
+The plugin ships with built-in support for [Filament Shield](https://github.com/bezhanSalleh/filament-shield). Shield is entirely optional — without it, **"Manage alerts"** page is accessible to any authenticated user unless you set explicitly [`authorize()`](#page-access-control) method when you register the plugin.
+
+### Automatic setup
+
+If Shield is installed, the `filament-alert-box:install` command will generate permission entries via `shield:generate`
+
+### Manual setup
+
+If you prefer to set up Shield manually, or if the automatic setup didn't complete:
+
+```bash
+php artisan shield:generate --panel=admin --option=permissions
+```
+
+### Supported permissions
+
+**Manage alerts** page has its own page-level permission managed by Shield.
 
 ---
 

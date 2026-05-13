@@ -41,7 +41,7 @@ class AlertBoxSeeder extends Seeder
             ];
         }
 
-        $existing = $settings->alerts ?? [];
+        $existing = $settings->alerts;
         $settings->alerts = array_merge($existing, $alerts);
         $settings->save();
     }

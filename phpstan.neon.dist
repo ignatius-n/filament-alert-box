@@ -12,4 +12,7 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
+    ignoreErrors:
+        # Shield facade is only called after class_exists guard
+        - '#BezhanSalleh\\FilamentShield\\#'
 

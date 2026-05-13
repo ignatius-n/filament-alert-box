@@ -16,7 +16,8 @@ enum AlertType: string implements HasColor, HasIcon, HasLabel
     case DANGER = 'danger';
     case NONE = 'none';
 
-    public function getLabel(): ?string
+    public function getLabel(): string
+    // public function getLabel(): ?string
     {
         return match ($this) {
             self::INFO => __('filament-alert-box::alert-box.styles.info'),

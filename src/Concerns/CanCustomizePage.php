@@ -15,13 +15,15 @@ trait CanCustomizePage
 
     protected string | Closure | null $navigationLabel = null;
 
-    protected string | Closure | BackedEnum | null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected string | Closure | BackedEnum | null $navigationIcon = Heroicon::OutlinedBellAlert;
 
     protected string | Closure | null $navigationGroup = null;
 
     protected null | int | Closure $navigationSort = null;
 
     protected bool | Closure $authorizeUsing = true;
+
+    protected bool $authorizeExplicitlyConfigured = false;
 
     public function navigationIcon(string | Closure | BackedEnum $icon): static
     {
@@ -75,8 +77,14 @@ trait CanCustomizePage
     public function authorize(bool | Closure $callback = true): static
     {
         $this->authorizeUsing = $callback;
+        $this->authorizeExplicitlyConfigured = true;
 
         return $this;
+    }
+
+    public function isAuthorizeExplicitlyConfigured(): bool
+    {
+        return $this->authorizeExplicitlyConfigured;
     }
 
     public function isAuthorized(): bool

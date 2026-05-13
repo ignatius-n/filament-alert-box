@@ -75,12 +75,18 @@ class AlertBox
 
     public static function getColor(string $type): ?string
     {
+        try {
+            $plugin = AlertBoxPlugin::get();
+        } catch (Throwable) {
+            return null;
+        }
+
         return match ($type) {
-            'info' => AlertBoxPlugin::get()->getColorInfo(),
-            'tip' => AlertBoxPlugin::get()->getColorTip(),
-            'success' => AlertBoxPlugin::get()->getColorSuccess(),
-            'warning' => AlertBoxPlugin::get()->getColorWarning(),
-            'danger' => AlertBoxPlugin::get()->getColorDanger(),
+            'info' => $plugin->getColorInfo(),
+            'tip' => $plugin->getColorTip(),
+            'success' => $plugin->getColorSuccess(),
+            'warning' => $plugin->getColorWarning(),
+            'danger' => $plugin->getColorDanger(),
             'none' => null,
             default => null
         };

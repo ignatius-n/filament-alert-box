@@ -8,6 +8,7 @@ use Agencetwogether\AlertBox\Commands\Concerns\ManagesThemeStyles;
 use Agencetwogether\AlertBox\Database\Seeders\AlertBoxSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Process\Process;
 
 use function Laravel\Prompts\select;
 
@@ -18,6 +19,8 @@ class InstallCommand extends Command
     use ManagesThemeStyles;
 
     protected ?string $panelId = null;
+
+    protected bool $shieldConfigured = false;
 
     public $signature = 'filament-alert-box:install
                         {--panel= : Panel ID to register the plugin in}
@@ -78,6 +81,7 @@ class InstallCommand extends Command
 
         $this->registerInPanel();
         $this->registerThemeStylesForPanel();
+        $this->generateShieldPermissions();
 
         $this->newLine();
         $this->info('AlertBox plugin installed successfully!');
@@ -148,6 +152,45 @@ class InstallCommand extends Command
         if ($this->confirm('Register AlertBox styles in your custom Filament theme?', true)) {
             $this->comment('Registering AlertBox styles...');
             $this->registerThemeStyles($this->panelId);
+        }
+    }
+
+    protected function generateShieldPermissions(): void
+    {
+        $configPath = config_path('filament-shield.php');
+
+        if (! file_exists($configPath)) {
+            return;
+        }
+
+        if (! $this->confirm('Generate Shield permission for AlertBox page?', true)) {
+            return;
+        }
+
+        $this->comment('Generating Shield permission for AlertBox page...');
+
+        $args = [
+            PHP_BINARY, 'artisan', 'shield:generate',
+            '--page=ManageAlertBox',
+            '--option=permissions',
+            '--no-interaction',
+        ];
+
+        if ($this->panelId !== null) {
+            $args[] = "--panel={$this->panelId}";
+        }
+
+        $process = new Process($args, base_path());
+        $process->setTimeout(60);
+        $process->run();
+
+        if ($process->isSuccessful()) {
+            $this->shieldConfigured = true;
+            $this->info('  Shield permission generated');
+        } else {
+            $this->components->warn('Could not generate Shield permissions automatically. Run manually:');
+            $panelFlag = $this->panelId !== null ? " --panel={$this->panelId}" : '';
+            $this->line("  php artisan shield:generate{$panelFlag} --option=permissions");
         }
     }
 }
